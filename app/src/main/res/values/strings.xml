@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">GoNative</string>
+    <string name="home_name">Home</string>
+    <string name="reviewRatings_name">Review / Ratings</string>
+    <string name="addReviewRatings_name">Add Review</string>
+
+    <string name="reviewPlace1">Botanical Garden</string>
+    <string name="reviewPlace2">Pasar Seni</string>
+    <string name="reviewPlace3">KLCC</string>
+    <string name="search">Search...</string>
+</resources>
