@@ -57,10 +57,10 @@ class MainActivity : ComponentActivity() {
                             Home()
                         }
                         composable("review") {
-                            ReviewRatings()
+                            ReviewRatings(navController)
                         }
-                        composable("add review") {
-                            AddReviewRatings()
+                        composable("view review") {
+                            ViewReviewRatings(navController)
                         }
                         composable("events"){
                             //add evets screen  func here
