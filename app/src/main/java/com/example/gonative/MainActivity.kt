@@ -59,8 +59,9 @@ class MainActivity : ComponentActivity() {
                         composable("review") {
                             ReviewRatings(navController)
                         }
-                        composable("view review") {
-                            ViewReviewRatings(navController)
+                        composable("viewReviewRatings/{placeName}") { backStackEntry ->
+                            val placeName = backStackEntry.arguments?.getString("placeName") ?: "Unknown Place"
+                            ViewReviewRatings(navController, placeName)
                         }
                         composable("events"){
                             //add evets screen  func here

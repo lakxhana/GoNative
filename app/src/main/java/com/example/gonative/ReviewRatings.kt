@@ -25,20 +25,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-
 @Composable
-fun ReviewRatings(navController:NavController) {
+fun ReviewRatings(navController: NavController) {
     val places = listOf(
         Triple(R.string.reviewPlace1, R.drawable.botanicalgarden, 5),
         Triple(R.string.reviewPlace2, R.drawable.pasarseni, 4),
         Triple(R.string.reviewPlace3, R.drawable.klcc, 3)
     )
     val searchQuery = remember { mutableStateOf("") }
-
     val filteredPlaces = if (searchQuery.value.isEmpty()) {
         places
     } else {
         places.filter {
+            // Use stringResource to get the name of the place and compare it to the search query
             stringResource(it.first).contains(searchQuery.value, ignoreCase = true)
         }
     }
@@ -55,6 +54,7 @@ fun ReviewRatings(navController:NavController) {
                 .padding(top = 30.dp, start = 43.dp)
         )
 
+        // Search bar
         SearchBar(
             value = searchQuery.value,
             onValueChange = { searchQuery.value = it },
@@ -70,30 +70,36 @@ fun ReviewRatings(navController:NavController) {
                 .padding(top = 135.dp, start = 40.dp)
         ) {
             filteredPlaces.forEach { place ->
+                val placeName = stringResource(place.first)
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 18.dp)
                 ) {
                     Text(
-                        text = stringResource(place.first),
+                        text = placeName,
                         fontSize = 14.sp,
                         fontFamily = FontFamily(Font(R.font.montserrat_regular))
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     RowOfStars(starCount = place.third, starColor = MaterialTheme.colorScheme.surfaceTint)
                 }
+
                 Image(
                     painter = painterResource(id = place.second),
-                    contentDescription = stringResource(id = place.first),
+                    contentDescription = placeName,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
                         .width(310.dp)
-                        .clickable { navController.navigate("view review") }
+                        .clickable {
+                            navController.navigate("viewReviewRatings/$placeName")
+                        }
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun RowOfStars(

@@ -4,6 +4,9 @@
     <string name="reviewRatings_name">Review / Ratings</string>
     <string name="addReviewRatings_name">Add Review</string>
     <string name="viewReviewRatings_name">View Review</string>
+    <string name="highestRatings">Highest Ratings</string>
+    <string name="lowestRatings">Lowest Ratings</string>
+    <string name="mostRecentRatings">Most Recent</string>
 
     <string name="reviewPlace1">Botanical Garden</string>
     <string name="reviewPlace2">Pasar Seni</string>
