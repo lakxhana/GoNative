@@ -6,6 +6,7 @@ import android.provider.Telephony.Mms.Addr
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,29 +32,51 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.gonative.eventdetailspage.carbootDetails
+import com.example.gonative.eventdetailspage.halloweenDetails
+import com.example.gonative.eventdetailspage.midvalleyDetails
 import com.example.gonative.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Create instance of AuthViewModel
+        val authViewModel: AuthViewModel by viewModels()
+
+
         setContent {
             AppTheme {
                 val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+                // Define the screens that require a bottom bar
+                val screensWithBottomBar = listOf("home", "review", "add review", "viewReviewRatings/{placeName}", "events", "profile", "halloweenDetails", "carbootDetails", "midvalleyDetails")
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        BottomAppBar(navController = navController)
+                        if (navBackStackEntry?.destination?.route in screensWithBottomBar) {
+                            BottomAppBar(navController = navController)
+                        }
                     }
                 ) { innerPadding ->
 
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "login",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        // Navigation destinations
+                        composable("login") {
+                            LoginPage(Modifier, navController, authViewModel)
+                        }
+                        composable("signup") {
+                            SignupPage(Modifier, navController, authViewModel)
+                        }
                         composable("home") {
                             Home()
                         }
@@ -65,9 +89,37 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("events"){
                             //add evets screen  func here
+                            // Add events screen function here
+                            EventsPromotions(navController)
                         }
                         composable("profile") {
-                            //add profile screen func here
+                            // Add profile screen function here
+
+                            Profile(Modifier, navController, authViewModel)
+                        }
+                        composable("halloweenDetails") {
+                            // Add halloweenDetails screen function here
+                            halloweenDetails(navigateBackToEventPromotions  = {
+                                navController.popBackStack("events", inclusive = false)
+                            },
+                            )
+
+                        }
+                        composable("carbootDetails") {
+                            // Add carbootDetails screen function here
+                            carbootDetails(
+                                navigateBackToEventPromotions  = {
+                                    navController.popBackStack("events", inclusive = false)
+                                },
+                            )
+                        }
+                        composable("midvalleyDetails") {
+                            // Add midvalleyDetails screen function here
+                            midvalleyDetails(
+                                navigateBackToEventPromotions  = {
+                                    navController.popBackStack("events", inclusive = false)
+                                },
+                            )
                         }
                     }
                 }
