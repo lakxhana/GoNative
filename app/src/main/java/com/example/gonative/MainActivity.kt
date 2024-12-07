@@ -37,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gonative.eventdetailspage.carbootDetails
 import com.example.gonative.eventdetailspage.halloweenDetails
 import com.example.gonative.eventdetailspage.midvalleyDetails
+import com.example.gonative.AddReview
 import com.example.gonative.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +83,10 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("review") {
                             ReviewRatings(navController)
+                        }
+                        composable("addReview/{placeName}") { backStackEntry ->
+                            val placeName = backStackEntry.arguments?.getString("placeName") ?: "Unknown Place"
+                            AddReview(navController = navController, placeName = placeName)
                         }
                         composable("viewReviewRatings/{placeName}") { backStackEntry ->
                             val placeName = backStackEntry.arguments?.getString("placeName") ?: "Unknown Place"

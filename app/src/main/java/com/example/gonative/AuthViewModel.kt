@@ -1,5 +1,6 @@
 package com.example.gonative
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -68,6 +69,66 @@ class AuthViewModel : ViewModel() {
                 }
             }
     }
+
+
+    fun saveReviewToFirebase(userId: String, placeName: String, rating: Float, reviewText: String, date: String) {
+        val reviewMap = mapOf(
+            "placeName" to placeName,
+            "rating" to rating,
+            "reviewText" to reviewText,
+            "date" to date
+        )
+
+        val reviewsRef = database.getReference("reviews").child(userId).push()
+        reviewsRef.setValue(reviewMap)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("Firebase", "Review saved successfully!")
+                } else {
+                    Log.e("Firebase", "Error saving review: ${task.exception?.message}")
+                }
+            }
+    }
+
+
+    fun fetchReviewsByPlace(placeName: String, onComplete: (List<Map<String, Any>>) -> Unit) {
+        val reviewsRef = database.getReference("reviews")
+        reviewsRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val allReviews = mutableListOf<Map<String, Any>>()
+                task.result?.children?.forEach { userNode ->
+                    userNode.children.forEach { reviewNode ->
+                        val review = reviewNode.value as? Map<String, Any>
+                        review?.let {
+
+                            val rating = when (val value = it["rating"]) {
+                                is Double -> value.toFloat()
+                                is Int -> value.toFloat()
+                                is Long -> value.toFloat()
+                                is String -> {
+                                    Log.d("Firebase", "Rating value: $value")  // Log the raw value
+                                    value.toFloatOrNull() ?: 0.0f
+                                }
+
+                                else -> {
+                                    Log.d("Firebase", "Rating value: $value, Type: ${value?.javaClass?.name ?: "null"}")
+                                }
+                            }
+
+                            val mutableReview = it.toMutableMap()
+                            mutableReview["rating"] = rating
+                            allReviews.add(mutableReview)
+                        }
+                    }
+                }
+                onComplete(allReviews)
+            } else {
+                Log.e("Firebase", "Error fetching reviews: ${task.exception?.message}")
+                onComplete(emptyList())
+            }
+        }
+    }
+
 
 
     private fun saveUserData(userId: String, email: String, username: String, phonenumb: String) {
