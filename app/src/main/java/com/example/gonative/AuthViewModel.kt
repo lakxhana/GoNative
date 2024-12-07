@@ -104,7 +104,7 @@ class AuthViewModel : ViewModel() {
                             val rating = when (val value = it["rating"]) {
                                 is Double -> value.toFloat()
                                 is Int -> value.toFloat()
-                                is Long -> value.toLong()
+                                is Long -> value.toFloat()
                                 is String -> {
                                     Log.d("Firebase", "Rating value: $value")
                                     value.toFloatOrNull() ?: 0.0f

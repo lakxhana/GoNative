@@ -49,20 +49,23 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
     }
 
     val isDialogOpen = remember { mutableStateOf(false) }
-    val sortOption = remember { mutableStateOf("") }
+    val sortOption = remember { mutableStateOf("Most Recent") }
     val reviews = remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     val viewModel: AuthViewModel = viewModel()
 
-    LaunchedEffect(placeName) {
+    LaunchedEffect(placeName, sortOption.value) {
         viewModel.fetchReviewsByPlace(placeName) { fetchedReviews ->
-
             val filteredReviews = fetchedReviews.filter { review ->
                 review["placeName"] == placeName
             }
-            reviews.value = filteredReviews
+            reviews.value = when (sortOption.value) {
+                "Most Recent" -> filteredReviews.sortedByDescending { it["date"] as? String ?: "" }
+                "Highest Rating" -> filteredReviews.sortedByDescending { it["rating"] as? Float ?: 0f }
+                "Lowest Rating" -> filteredReviews.sortedBy { it["rating"] as? Float ?: 0f }
+                else -> filteredReviews
+            }
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -84,7 +87,6 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
                     }
                 },
                 actions = {
-
                     IconButton(onClick = { isDialogOpen.value = true }) {
                         Icon(
                             imageVector = Icons.Filled.FilterList,
@@ -97,10 +99,9 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
                         navController.navigate("addReview/${placeName}")
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.Edit ,
+                            imageVector = Icons.Filled.Edit,
                             contentDescription = "Pencil Icon",
                             tint = Color.White
-
                         )
                     }
                 },
@@ -182,7 +183,9 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
             }
         }
     }
-}@Composable
+}
+
+@Composable
 fun ReviewCard(review: Map<String, Any>) {
     val rating = review["rating"] as? Float ?: 0f
     val text = review["reviewText"] as? String ?: "No review provided"
