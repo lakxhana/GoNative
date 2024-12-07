@@ -1,5 +1,6 @@
 package com.example.gonative
 
+import android.widget.RatingBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,11 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,9 +31,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,16 +50,19 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
 
     val isDialogOpen = remember { mutableStateOf(false) }
     val sortOption = remember { mutableStateOf("") }
+    val reviews = remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    val viewModel: AuthViewModel = viewModel()
 
-    val sortOptions = listOf(
-        stringResource(R.string.mostRecentRatings),
-        stringResource(R.string.highestRatings),
-        stringResource(R.string.lowestRatings)
-    )
+    LaunchedEffect(placeName) {
+        viewModel.fetchReviewsByPlace(placeName) { fetchedReviews ->
 
-    fun sortReviews(option: String) {
-        sortOption.value = option
+            val filteredReviews = fetchedReviews.filter { review ->
+                review["placeName"] == placeName
+            }
+            reviews.value = filteredReviews
+        }
     }
+
 
     Scaffold(
         topBar = {
@@ -73,6 +83,27 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
                         )
                     }
                 },
+                actions = {
+
+                    IconButton(onClick = { isDialogOpen.value = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.FilterList,
+                            contentDescription = "Filter Reviews",
+                            tint = Color.White
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        navController.navigate("addReview/${placeName}")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit ,
+                            contentDescription = "Pencil Icon",
+                            tint = Color.White
+
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -84,55 +115,45 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(bottom = 18.dp, start = 365.dp, top = 6.dp)
-                    .clickable { isDialogOpen.value = true }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.FilterList,
-                    contentDescription = "Filter Icon",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 30.dp, start = 20.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 18.dp)
-                ) {
-                    Text(
-                        text = placeName,
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily(Font(R.font.montserrat_regular))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-
-                if (imageResource != null) {
+                imageResource?.let {
                     Image(
-                        painter = painterResource(id = imageResource),
+                        painter = painterResource(id = it),
                         contentDescription = placeName,
                         modifier = Modifier
                             .padding(bottom = 16.dp)
                             .width(360.dp)
-                            .clickable {
-                                navController.navigate("viewReviewRatings/$placeName")
-                            }
                     )
                 }
 
                 Text(
-                    text = "Written Review",
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily(Font(R.font.montserrat_regular))
+                    text = "Reviews for $placeName",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 )
+
+                if (reviews.value.isEmpty()) {
+                    Text(
+                        text = "No reviews yet.",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(reviews.value) { review ->
+                            ReviewCard(review)
+                        }
+                    }
+                }
             }
 
             if (isDialogOpen.value) {
@@ -141,9 +162,9 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
                     title = { Text("Sort Reviews") },
                     text = {
                         Column {
-                            sortOptions.forEach { option ->
+                            listOf("Most Recent", "Highest Rating", "Lowest Rating").forEach { option ->
                                 TextButton(onClick = {
-                                    sortReviews(option)
+                                    sortOption.value = option
                                     isDialogOpen.value = false
                                 }) {
                                     Text(option)
@@ -161,8 +182,51 @@ fun ViewReviewRatings(navController: NavController, placeName: String) {
             }
         }
     }
-}
+}@Composable
+fun ReviewCard(review: Map<String, Any>) {
+    val rating = review["rating"] as? Float ?: 0f
+    val text = review["reviewText"] as? String ?: "No review provided"
+    val date = review["date"] as? String ?: "Unknown date"
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                repeat(5) { index ->
+                    val starIcon = if (index < rating) {
+                        Icons.Filled.Star
+                    } else {
+                        Icons.Filled.StarBorder
+                    }
+                    Icon(
+                        imageVector = starIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Text(
+                    text = "${"%.1f".format(rating)}/5",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.padding(vertical = 4.dp))
+            Text(text = text, fontSize = 14.sp)
+            Spacer(modifier = Modifier.padding(vertical = 4.dp))
+            Text(text = "Date: $date", fontSize = 12.sp, color = Color.Gray)
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
