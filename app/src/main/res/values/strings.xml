@@ -12,4 +12,8 @@
     <string name="reviewPlace2">Pasar Seni</string>
     <string name="reviewPlace3">KLCC</string>
     <string name="search">Search...</string>
+
+    <string name="eventPromotion1">Halloween- Sunway Pyramid</string>
+    <string name="eventPromotion2">CarBoot Sale</string>
+    <string name="eventPromotion3">MidValley Exhibition</string>
 </resources>

@@ -37,7 +37,6 @@ fun ReviewRatings(navController: NavController) {
         places
     } else {
         places.filter {
-            // Use stringResource to get the name of the place and compare it to the search query
             stringResource(it.first).contains(searchQuery.value, ignoreCase = true)
         }
     }
