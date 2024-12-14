@@ -38,6 +38,9 @@ import com.example.gonative.eventdetailspage.carbootDetails
 import com.example.gonative.eventdetailspage.halloweenDetails
 import com.example.gonative.eventdetailspage.midvalleyDetails
 import com.example.gonative.AddReview
+import com.example.gonative.placedetailspage.botanicalDetails
+import com.example.gonative.placedetailspage.klccDetails
+import com.example.gonative.placedetailspage.pasarseniDetails
 import com.example.gonative.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -79,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             SignupPage(Modifier, navController, authViewModel)
                         }
                         composable("home") {
-                            Home()
+                            Home(navController)
                         }
                         composable("review") {
                             ReviewRatings(navController)
@@ -102,11 +105,21 @@ class MainActivity : ComponentActivity() {
 
                             Profile(Modifier, navController, authViewModel)
                         }
+                        composable("botanicalDetails") {
+                            botanicalDetails(navigateBackToHome = { navController.popBackStack("home", inclusive = false) })
+                        }
+                        composable("pasarseniDetails") {
+                            pasarseniDetails(navigateBackToHome = { navController.popBackStack("home", inclusive = false) })
+                        }
+                        composable("klccDetails") {
+                            klccDetails(navigateBackToHome = { navController.popBackStack("home", inclusive = false) })
+                        }
                         composable("halloweenDetails") {
                             // Add halloweenDetails screen function here
                             halloweenDetails(navigateBackToEventPromotions  = {
                                 navController.popBackStack("events", inclusive = false)
-                            },
+                            }
+                                ,
                             )
 
                         }
