@@ -106,7 +106,7 @@ class AuthViewModel : ViewModel() {
                                 is Int -> value.toFloat()
                                 is Long -> value.toFloat()
                                 is String -> {
-                                    Log.d("Firebase", "Rating value: $value")  // Log the raw value
+                                    Log.d("Firebase", "Rating value: $value")
                                     value.toFloatOrNull() ?: 0.0f
                                 }
 
